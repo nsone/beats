@@ -7,7 +7,6 @@ import (
 	"github.com/miekg/dns"
 	"net"
 	"strings"
-	//	"fmt"
 )
 
 func init() {

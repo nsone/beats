@@ -28,7 +28,7 @@ func newDNSMonitorHostJob(
 	fields := common.MapStr{
 		"nameserver": nameserver,
 		"question":   question,
-		"dst_host":   host,
+		"ip":         host,
 		"qtype":      qtypestr,
 		"port":       port,
 	}
