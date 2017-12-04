@@ -6,7 +6,6 @@ import (
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/miekg/dns"
 	"net"
-	"fmt"
 	"strings"
 )
 
@@ -37,7 +36,6 @@ func create(
 	for _, nameserver := range config.NameServers {
 
 		host, port, port_err := net.SplitHostPort(nameserver)
-//		fmt.Printf("1. nameserver:[%v] host[%v] port[%v] port_err[%v]\n", nameserver, host, port, port_err)
 		
 		if port_err != nil {
 	                host = nameserver
@@ -69,7 +67,6 @@ func create(
 			} else {
 				isv6 = false
 			}
-			fmt.Printf("1.2: [%v]\n", nameserver)
 		}
 
 		for _, question := range config.Questions {
