@@ -6,6 +6,7 @@ import (
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/miekg/dns"
 	"net"
+	"fmt"
 	"strings"
 )
 
@@ -36,28 +37,41 @@ func create(
 	for _, nameserver := range config.NameServers {
 
 		host, port, port_err := net.SplitHostPort(nameserver)
-		//	    fmt.Printf("host[%v] port[%v] port_err[%v]\n", host, port, port_err)
-
+//		fmt.Printf("1. nameserver:[%v] host[%v] port[%v] port_err[%v]\n", nameserver, host, port, port_err)
+		
 		if port_err != nil {
-			host = nameserver
-			if strings.Contains(host, ":") {
-				nameserver = "[" + nameserver + "]:53"
+	                host = nameserver
+                        IPAddr, rslv_err := net.ResolveIPAddr("ip", nameserver)
+
+		        if rslv_err != nil {
+                                continue
+                        }
+                        nameserver = IPAddr.String()
+
+			if strings.Contains(nameserver, ":") {
 				isv6 = true
 			} else {
-				nameserver += ":53"
 				isv6 = false
 			}
+
 			port = "53"
 
 		} else {
-			if strings.Contains(host, ":") {
+                        IPAddr, rslv_err := net.ResolveIPAddr("ip", host)
+
+		        if rslv_err != nil {
+                                continue
+                        }
+                        nameserver = IPAddr.String()
+
+			if strings.Contains(nameserver, ":") {
 				isv6 = true
 			} else {
 				isv6 = false
 			}
+			fmt.Printf("1.2: [%v]\n", nameserver)
 		}
 
-		//	    fmt.Printf("nameserver[%v] host[%v] port[%v]\n", nameserver, host, port)
 		for _, question := range config.Questions {
 
 			query, qtypestr, qtype_err := net.SplitHostPort(question)
@@ -73,6 +87,7 @@ func create(
 					qtype = dns.TypeA
 				}
 			}
+
 			jobs[index], err = newDNSMonitorHostJob(nameserver, host, port, isv6, query, qtype, &config)
 
 			if err != nil {
