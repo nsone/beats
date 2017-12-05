@@ -45,7 +45,7 @@ func create(
 				continue
 			}
 			nameserver = IPAddr.String()
-                        isv6 = isNsIPv6(nameserver)
+			isv6 = isNsIPv6(nameserver)
 			port = "53"
 
 		} else {
@@ -55,7 +55,7 @@ func create(
 				continue
 			}
 			nameserver = IPAddr.String()
-                        isv6 = isNsIPv6(nameserver)
+			isv6 = isNsIPv6(nameserver)
 		}
 
 		for _, question := range config.Questions {
@@ -87,9 +87,9 @@ func create(
 }
 
 func isNsIPv6(nameserver string) bool {
-     if strings.Contains(nameserver, ":") {
-            return true
-     } else {
-	    return false
-     }     
+	if strings.Contains(nameserver, ":") {
+		return true
+	} else {
+		return false
+	}
 }
