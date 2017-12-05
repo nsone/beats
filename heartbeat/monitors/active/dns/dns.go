@@ -45,13 +45,7 @@ func create(
 				continue
 			}
 			nameserver = IPAddr.String()
-
-			if strings.Contains(nameserver, ":") {
-				isv6 = true
-			} else {
-				isv6 = false
-			}
-
+                        isv6 = isNsIPv6(nameserver)
 			port = "53"
 
 		} else {
@@ -61,12 +55,7 @@ func create(
 				continue
 			}
 			nameserver = IPAddr.String()
-
-			if strings.Contains(nameserver, ":") {
-				isv6 = true
-			} else {
-				isv6 = false
-			}
+                        isv6 = isNsIPv6(nameserver)
 		}
 
 		for _, question := range config.Questions {
@@ -95,4 +84,12 @@ func create(
 	}
 
 	return jobs, nil
+}
+
+func isNsIPv6(nameserver string) bool {
+     if strings.Contains(nameserver, ":") {
+            return true
+     } else {
+	    return false
+     }     
 }
