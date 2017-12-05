@@ -36,15 +36,15 @@ func create(
 	for _, nameserver := range config.NameServers {
 
 		host, port, port_err := net.SplitHostPort(nameserver)
-		
-		if port_err != nil {
-	                host = nameserver
-                        IPAddr, rslv_err := net.ResolveIPAddr("ip", nameserver)
 
-		        if rslv_err != nil {
-                                continue
-                        }
-                        nameserver = IPAddr.String()
+		if port_err != nil {
+			host = nameserver
+			IPAddr, rslv_err := net.ResolveIPAddr("ip", nameserver)
+
+			if rslv_err != nil {
+				continue
+			}
+			nameserver = IPAddr.String()
 
 			if strings.Contains(nameserver, ":") {
 				isv6 = true
@@ -55,12 +55,12 @@ func create(
 			port = "53"
 
 		} else {
-                        IPAddr, rslv_err := net.ResolveIPAddr("ip", host)
+			IPAddr, rslv_err := net.ResolveIPAddr("ip", host)
 
-		        if rslv_err != nil {
-                                continue
-                        }
-                        nameserver = IPAddr.String()
+			if rslv_err != nil {
+				continue
+			}
+			nameserver = IPAddr.String()
 
 			if strings.Contains(nameserver, ":") {
 				isv6 = true

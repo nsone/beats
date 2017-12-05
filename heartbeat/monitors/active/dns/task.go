@@ -24,11 +24,11 @@ func newDNSMonitorHostJob(
 	jobName := fmt.Sprintf("%v@%v@%v@%v", typ, nameserver, question, qtypestr)
 
 	fields := common.MapStr{
-		"host":       host,
-		"question":   question,
-		"ip":         nameserver,
-		"qtype":      qtypestr,
-		"port":       port,
+		"host":     host,
+		"question": question,
+		"ip":       nameserver,
+		"qtype":    qtypestr,
+		"port":     port,
 	}
 
 	return monitors.MakeSimpleJob(jobName, typ, func() (common.MapStr, error) {
@@ -54,10 +54,10 @@ func execQuery(nameserver string, port string, isv6 bool, question string, qtype
 
 	if isv6 {
 		dns_client.Net = "udp6"
-                nameserver_port = "[" + nameserver + "]:" + port
-	}else{
-	        nameserver_port = nameserver + ":" + port
-        }
+		nameserver_port = "[" + nameserver + "]:" + port
+	} else {
+		nameserver_port = nameserver + ":" + port
+	}
 
 	in, rtt, err := dns_client.Exchange(dns_msg, nameserver_port)
 
