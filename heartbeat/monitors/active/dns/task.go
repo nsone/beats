@@ -70,7 +70,7 @@ func execQuery(nameserver string, port string, isv6 bool, question string, qtype
 		"rtt":        rtt,
 	}
 
-	if len(in.Answer) == 0 {
+	if in != nil && len(in.Answer) == 0 {
 		resp_err := errors.New("Zero Answers")
 		return event, reason.IOFailed(resp_err)
 	}
