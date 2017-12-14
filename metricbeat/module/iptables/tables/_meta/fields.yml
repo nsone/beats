@@ -1,0 +1,9 @@
+- name: tables
+  type: group
+  description: >
+    tables
+  fields:
+    - name: example
+      type: keyword
+      description: >
+        Example field
