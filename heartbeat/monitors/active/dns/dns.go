@@ -35,13 +35,13 @@ func create(
 
 	for _, nameserver := range config.NameServers {
 
-		host, port, port_err := net.SplitHostPort(nameserver)
+		host, port, portErr := net.SplitHostPort(nameserver)
 
-		if port_err != nil {
+		if portErr != nil {
 			host = nameserver
-			IPAddr, rslv_err := net.ResolveIPAddr("ip", nameserver)
+			IPAddr, rslvErr := net.ResolveIPAddr("ip", nameserver)
 
-			if rslv_err != nil {
+			if rslvErr != nil {
 				continue
 			}
 			nameserver = IPAddr.String()
@@ -49,9 +49,9 @@ func create(
 			port = "53"
 
 		} else {
-			IPAddr, rslv_err := net.ResolveIPAddr("ip", host)
+			IPAddr, rslvErr := net.ResolveIPAddr("ip", host)
 
-			if rslv_err != nil {
+			if rslvErr != nil {
 				continue
 			}
 			nameserver = IPAddr.String()
@@ -60,9 +60,9 @@ func create(
 
 		for _, question := range config.Questions {
 
-			query, qtypestr, qtype_err := net.SplitHostPort(question)
+			query, qtypestr, qtypeErr := net.SplitHostPort(question)
 
-			if qtype_err != nil {
+			if qtypeErr != nil {
 				query = question
 				qtype = dns.TypeA
 
@@ -89,7 +89,6 @@ func create(
 func isNsIPv6(nameserver string) bool {
 	if strings.Contains(nameserver, ":") {
 		return true
-	} else {
-		return false
-	}
+    }
+    return false
 }

@@ -44,36 +44,36 @@ func newDNSMonitorHostJob(
 
 func execQuery(nameserver string, port string, isv6 bool, question string, qtype uint16) (common.MapStr, reason.Reason) {
 
-	dns_msg := new(dns.Msg)
-	dns_msg.Id = dns.Id()
-	dns_msg.RecursionDesired = true
-	dns_msg.Question = make([]dns.Question, 1)
+	dnsMsg := new(dns.Msg)
+	dnsMsg.Id = dns.Id()
+	dnsMsg.RecursionDesired = true
+	dnsMsg.Question = make([]dns.Question, 1)
 
-	dns_msg.Question[0] = dns.Question{dns.Fqdn(question), qtype, dns.ClassINET}
-	dns_client := new(dns.Client)
-	var nameserver_port string
+	dnsMsg.Question[0] = dns.Question{dns.Fqdn(question), qtype, dns.ClassINET}
+	dnsClient := new(dns.Client)
+	var nameserverPort string
 
 	if isv6 {
-		dns_client.Net = "udp6"
-		nameserver_port = "[" + nameserver + "]:" + port
+		dnsClient.Net = "udp6"
+		nameserverPort = "[" + nameserver + "]:" + port
 	} else {
-		nameserver_port = nameserver + ":" + port
+		nameserverPort = nameserver + ":" + port
 	}
 
-	in, rtt, err := dns_client.Exchange(dns_msg, nameserver_port)
+	in, rtt, err := dnsClient.Exchange(dnsMsg, nameserverPort)
 
 	event := common.MapStr{
 		"response": common.MapStr{
 			"in": in,
 		},
-		"nameserver": nameserver_port,
+		"nameserver": nameserverPort,
 		"question":   question,
 		"rtt":        rtt,
 	}
 
 	if in != nil && len(in.Answer) == 0 {
-		resp_err := errors.New("Zero Answers")
-		return event, reason.IOFailed(resp_err)
+		respErr := errors.New("Zero Answers")
+		return event, reason.IOFailed(respErr)
 	}
 
 	if err != nil {
