@@ -23,13 +23,15 @@ func newDNSMonitorHostJob(
 
 	jobName := fmt.Sprintf("%v@%v@%v@%v", typ, nameserver, question, qtypestr)
 
-	settings := monitors.MakeJobSetting(jobName).WithFields(common.MapStr{
+    fields := common.MapStr{
 		"host":     host,
 		"question": question,
 		"ip":       nameserver,
 		"qtype":    qtypestr,
 		"port":     port,
-	})
+    }
+
+	settings := monitors.MakeJobSetting(jobName).WithFields(fields)
 
 	// return monitors.MakeSimpleJob(jobName, typ, func() (common.MapStr, error) {
 	return monitors.MakeSimpleJob(settings, func() (common.MapStr, error) {
