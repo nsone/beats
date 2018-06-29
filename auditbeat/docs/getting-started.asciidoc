@@ -123,8 +123,7 @@ https://www.elastic.co/downloads/beats/{beatname_lc}[downloads page].
 . Rename the +{beatname_lc}-<version>-windows+ directory to +{beatname_uc}+.
 
 . Open a PowerShell prompt as an Administrator (right-click the PowerShell icon
-and select *Run As Administrator*). If you are running Windows XP, you may need
-to download and install PowerShell.
+and select *Run As Administrator*).
 
 . From the PowerShell prompt, run the following commands to install {beatname_uc}
 as a Windows service:
@@ -158,16 +157,15 @@ To configure {beatname_uc}:
 modules to collect the audit information. For each module, specify the
 metricsets that you want to collect.
 +
-The following example shows the `file` metricset configured to generate
+The following example shows the `file_integrity` module configured to generate
 events whenever a file in one of the specified paths changes on disk:
 +
 ["source","sh",subs="attributes"]
 -------------------------------------
 auditbeat.modules:
 
-- module: audit
-  metricsets: [file]
-  file.paths:
+- module: file_integrity
+  paths:
   - /bin
   - /usr/bin
   - /sbin

@@ -5,13 +5,11 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: filebeat
-    kubernetes.io/cluster-service: "true"
 spec:
   template:
     metadata:
       labels:
         k8s-app: filebeat
-        kubernetes.io/cluster-service: "true"
     spec:
       serviceAccountName: filebeat
       terminationGracePeriodSeconds: 30
@@ -35,10 +33,6 @@ spec:
           value:
         - name: ELASTIC_CLOUD_AUTH
           value:
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
         securityContext:
           runAsUser: 0
         resources:
@@ -52,8 +46,8 @@ spec:
           mountPath: /etc/filebeat.yml
           readOnly: true
           subPath: filebeat.yml
-        - name: prospectors
-          mountPath: /usr/share/filebeat/prospectors.d
+        - name: inputs
+          mountPath: /usr/share/filebeat/inputs.d
           readOnly: true
         - name: data
           mountPath: /usr/share/filebeat/data
@@ -68,9 +62,12 @@ spec:
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers
-      - name: prospectors
+      - name: inputs
         configMap:
           defaultMode: 0600
-          name: filebeat-prospectors
+          name: filebeat-inputs
+      # We set an `emptyDir` here to ensure the manifest will deploy correctly.
+      # It's recommended to change this to a `hostPath` folder, to ensure internal data
+      # files survive pod changes (ie: version upgrade)
       - name: data
         emptyDir: {}

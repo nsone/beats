@@ -7,18 +7,19 @@ import (
 
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
+	"github.com/elastic/beats/libbeat/metric/system/process"
 	"github.com/elastic/beats/metricbeat/mb"
 	"github.com/elastic/beats/metricbeat/mb/parse"
-	"github.com/elastic/beats/metricbeat/module/system/process"
 	sigar "github.com/elastic/gosigar"
 )
 
 // init registers the MetricSet with the central registry.
 // The New method will be called after the setup of the module and before starting to fetch data
 func init() {
-	if err := mb.Registry.AddMetricSet("system", "process_summary", New, parse.EmptyHostParser); err != nil {
-		panic(err)
-	}
+	mb.Registry.MustAddMetricSet("system", "process_summary", New,
+		mb.WithHostParser(parse.EmptyHostParser),
+		mb.DefaultMetricSet(),
+	)
 }
 
 // MetricSet type defines all fields of the MetricSet
@@ -70,6 +71,8 @@ func (m *MetricSet) Fetch() (common.MapStr, error) {
 		case 'R':
 			summary.running++
 		case 'D':
+			summary.idle++
+		case 'I':
 			summary.idle++
 		case 'T':
 			summary.stopped++

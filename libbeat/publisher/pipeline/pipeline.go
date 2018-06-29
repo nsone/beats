@@ -62,13 +62,14 @@ type pipelineProcessors struct {
 	// The pipeline its processor settings for
 	// constructing the clients complete processor
 	// pipeline on connect.
-	beatsMeta common.MapStr
-	fields    common.MapStr
-	tags      []string
+	builtinMeta common.MapStr
+	fields      common.MapStr
+	tags        []string
 
 	processors beat.Processor
 
-	disabled bool // disabled is set if outputs have been disabled via CLI
+	disabled   bool // disabled is set if outputs have been disabled via CLI
+	alwaysCopy bool
 }
 
 // Settings is used to pass additional settings to a newly created pipeline instance.
@@ -90,8 +91,8 @@ type Settings struct {
 // processors, so all processors configured with the pipeline or client will see
 // the same/complete event.
 type Annotations struct {
-	Beat  common.MapStr
-	Event common.EventMetadata
+	Event   common.EventMetadata
+	Builtin common.MapStr
 }
 
 // WaitCloseMode enumerates the possible behaviors of WaitClose in a pipeline.
@@ -140,7 +141,7 @@ func New(
 ) (*Pipeline, error) {
 	var err error
 
-	log := defaultLogger
+	log := logp.NewLogger("publish")
 	annotations := settings.Annotations
 	processors := settings.Processors
 	disabledOutput := settings.Disabled
@@ -172,7 +173,18 @@ func New(
 	if err != nil {
 		return nil, err
 	}
-	p.eventSema = newSema(p.queue.BufferConfig().Events)
+
+	if count := p.queue.BufferConfig().Events; count > 0 {
+		p.eventSema = newSema(count)
+	}
+
+	maxEvents := p.queue.BufferConfig().Events
+	if maxEvents <= 0 {
+		// Maximum number of events until acker starts blocking.
+		// Only active if pipeline can drop events.
+		maxEvents = 64000
+	}
+	p.eventSema = newSema(maxEvents)
 
 	p.output = newOutputController(log, p.observer, p.queue)
 	p.output.Set(out)
@@ -253,7 +265,7 @@ func (p *Pipeline) Close() error {
 	// shutdown queue
 	err := p.queue.Close()
 	if err != nil {
-		log.Err("pipeline queue shutdown error: ", err)
+		log.Error("pipeline queue shutdown error: ", err)
 	}
 
 	p.observer.cleanup()
@@ -304,8 +316,7 @@ func (p *Pipeline) ConnectWith(cfg beat.ClientConfig) (beat.Client, error) {
 		}
 	}
 
-	processors := p.newProcessorPipeline(cfg)
-
+	processors := newProcessorPipeline(p.beatInfo, p.processors, cfg)
 	acker := p.makeACKer(processors != nil, &cfg, waitClose)
 	producerCfg := queue.ProducerConfig{
 		// Cancel events from queue if acker is configured
@@ -390,8 +401,8 @@ func makePipelineProcessors(
 		p.processors = tmp
 	}
 
-	if meta := annotations.Beat; meta != nil {
-		p.beatsMeta = common.MapStr{"beat": meta}
+	if meta := annotations.Builtin; meta != nil {
+		p.builtinMeta = meta
 	}
 
 	if em := annotations.Event; len(em.Fields) > 0 {

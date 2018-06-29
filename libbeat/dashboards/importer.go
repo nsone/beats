@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/elastic/beats/libbeat/common"
@@ -34,6 +35,12 @@ type Loader interface {
 }
 
 func NewImporter(version common.Version, cfg *Config, loader Loader) (*Importer, error) {
+
+	// Current max version is 6
+	if version.Major > 6 {
+		version.Major = 6
+	}
+
 	return &Importer{
 		cfg:     cfg,
 		version: version,
@@ -64,7 +71,7 @@ func (imp Importer) ImportDashboard(file string) error {
 }
 
 func (imp Importer) ImportFile(fileType string, file string) error {
-	imp.loader.statusMsg("Import %s from %s\n", fileType, file)
+	imp.loader.statusMsg("Import %s from %s", fileType, file)
 
 	if fileType == "dashboard" {
 		return imp.loader.ImportDashboard(file)
@@ -111,6 +118,16 @@ func (imp Importer) unzip(archive, target string) error {
 	// Closure to close the files on each iteration
 	unzipFile := func(file *zip.File) error {
 		filePath := filepath.Join(target, file.Name)
+
+		// check that the resulting file path is indeed under target
+		// Note that Rel calls Clean.
+		relPath, err := filepath.Rel(target, filePath)
+		if err != nil {
+			return err
+		}
+		if strings.HasPrefix(filepath.ToSlash(relPath), "../") {
+			return fmt.Errorf("Zip file contains files outside of the target directory: %s", relPath)
+		}
 
 		if file.FileInfo().IsDir() {
 			return os.MkdirAll(filePath, file.Mode())
@@ -247,10 +264,7 @@ func (imp Importer) downloadFile(url string, target string) (string, error) {
 func (imp Importer) ImportKibanaDir(dir string) error {
 	var err error
 
-	versionPath := "default"
-	if imp.version.Major == 5 {
-		versionPath = "5.x"
-	}
+	versionPath := strconv.Itoa(imp.version.Major)
 
 	dir = path.Join(dir, versionPath)
 
@@ -264,8 +278,10 @@ func (imp Importer) ImportKibanaDir(dir string) error {
 	if !imp.cfg.OnlyDashboards {
 		check = append(check, "index-pattern")
 	}
+	wantDashboards := false
 	if !imp.cfg.OnlyIndex {
 		check = append(check, "dashboard")
+		wantDashboards = true
 	}
 
 	types := []string{}
@@ -292,7 +308,7 @@ func (imp Importer) ImportKibanaDir(dir string) error {
 		}
 	}
 
-	if !importDashboards {
+	if wantDashboards && !importDashboards {
 		return fmt.Errorf("No dashboards to import. Please make sure the %s directory contains a dashboard directory.",
 			dir)
 	}

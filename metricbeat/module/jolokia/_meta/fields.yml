@@ -3,7 +3,8 @@
   description: >
     Jolokia module
   short_config: false
-  release: beta
+  release: ga
+  settings: ["ssl"]
   fields:
     - name: jolokia
       type: group

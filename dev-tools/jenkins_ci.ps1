@@ -36,13 +36,14 @@ exec { go get -u github.com/jstemmer/go-junit-report }
 echo "Building $env:beat"
 exec { go build } "Build FAILURE"
 
+# always build the libbeat fields
+cp ..\libbeat\_meta\fields.common.yml ..\libbeat\_meta\fields.generated.yml
+cat ..\libbeat\processors\*\_meta\fields.yml | Out-File -append -encoding UTF8 -filepath ..\libbeat\_meta\fields.generated.yml
+cp ..\libbeat\_meta\fields.generated.yml ..\libbeat\fields.yml
+
 if ($env:beat -eq "metricbeat") {
     cp .\_meta\fields.common.yml .\_meta\fields.generated.yml
     python .\scripts\fields_collector.py | out-file -append -encoding UTF8 -filepath .\_meta\fields.generated.yml
-} elseif ($env:beat -eq "libbeat") {
-    cp .\_meta\fields.common.yml .\_meta\fields.generated.yml
-    cat processors\*\_meta\fields.yml | Out-File -append -encoding UTF8 -filepath .\_meta\fields.generated.yml
-    cp .\_meta\fields.generated.yml .\fields.yml
 }
 
 echo "Unit testing $env:beat"
@@ -52,6 +53,9 @@ exec { Get-Content build/TEST-go-unit.out | go-junit-report.exe -set-exit-code |
 echo "System testing $env:beat"
 # TODO (elastic/beats#5050): Use a vendored copy of this.
 exec { go get github.com/docker/libcompose }
-exec { go test -race -c -cover -covermode=atomic -coverpkg ./... }
+# Get a CSV list of package names.
+$packages = $(go list ./... | select-string -Pattern "/vendor/" -NotMatch | select-string -Pattern "/scripts/cmd/" -NotMatch)
+$packages = ($packages|group|Select -ExpandProperty Name) -join ","
+exec { go test -race -c -cover -covermode=atomic -coverpkg $packages }
 exec { cd tests/system }
 exec { nosetests --with-timer --with-xunit --xunit-file=../../build/TEST-system.xml } "System test FAILURE"

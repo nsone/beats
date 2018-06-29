@@ -28,7 +28,7 @@ After installing the Elastic Stack, read the following topics to learn how to in
 
 You should install Metricbeat as close as possible to the service you want to
 monitor. For example, if you have four servers with MySQL running, it's
-recommended that you run Metricbeat on each service. This allows Metricbeat to
+recommended that you run Metricbeat on each server. This allows Metricbeat to
 access your service from localhost and does not cause any additional network
 traffic or prevent Metricbeat from collecting metrics when there are network
 problems. Metrics from multiple Metricbeat instances will be combined on the
@@ -130,8 +130,7 @@ https://www.elastic.co/downloads/beats/metricbeat[downloads page].
 . Rename the `metricbeat-<version>-windows` directory to `Metricbeat`.
 
 . Open a PowerShell prompt as an Administrator (right-click the PowerShell icon
-and select *Run As Administrator*). If you are running Windows XP, you may need
-to download and install PowerShell.
+and select *Run As Administrator*).
 
 . From the PowerShell prompt, run the following commands to install Metricbeat
 as a Windows service:

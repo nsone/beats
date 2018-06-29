@@ -8,22 +8,23 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/libbeat/metric/system/cpu"
 	"github.com/elastic/beats/metricbeat/mb"
 	"github.com/elastic/beats/metricbeat/mb/parse"
-	"github.com/elastic/beats/metricbeat/module/system"
 )
 
 func init() {
-	if err := mb.Registry.AddMetricSet("system", "cpu", New, parse.EmptyHostParser); err != nil {
-		panic(err)
-	}
+	mb.Registry.MustAddMetricSet("system", "cpu", New,
+		mb.WithHostParser(parse.EmptyHostParser),
+		mb.DefaultMetricSet(),
+	)
 }
 
 // MetricSet for fetching system CPU metrics.
 type MetricSet struct {
 	mb.BaseMetricSet
 	config Config
-	cpu    *system.CPUMonitor
+	cpu    *cpu.Monitor
 }
 
 // New is a mb.MetricSetFactory that returns a cpu.MetricSet.
@@ -40,7 +41,7 @@ func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 	return &MetricSet{
 		BaseMetricSet: base,
 		config:        config,
-		cpu:           new(system.CPUMonitor),
+		cpu:           new(cpu.Monitor),
 	}, nil
 }
 
@@ -51,7 +52,7 @@ func (m *MetricSet) Fetch() (common.MapStr, error) {
 		return nil, errors.Wrap(err, "failed to fetch CPU times")
 	}
 
-	event := common.MapStr{"cores": system.NumCPU}
+	event := common.MapStr{"cores": cpu.NumCores}
 
 	for _, metric := range m.config.Metrics {
 		switch strings.ToLower(metric) {

@@ -1200,6 +1200,7 @@
                 same header name are present in the message, they will be separated
                 by commas.
             - name: body
+              type: text
               description: The body of the HTTP response.
 
 - key: icmp
@@ -1882,6 +1883,10 @@
                 The algorithm used for this certificate's public key.
                 One of RSA, DSA or ECDSA.
 
+            - name: public_key_size
+              type: long
+              description: Size of the public key.
+
             - name: signature_algorithm
               type: keyword
               description: >
@@ -1970,6 +1975,10 @@
               description: >
                 The algorithm used for this certificate's public key.
                 One of RSA, DSA or ECDSA.
+
+            - name: public_key_size
+              type: long
+              description: Size of the public key.
 
             - name: signature_algorithm
               type: keyword

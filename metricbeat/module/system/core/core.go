@@ -8,22 +8,22 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/libbeat/metric/system/cpu"
 	"github.com/elastic/beats/metricbeat/mb"
 	"github.com/elastic/beats/metricbeat/mb/parse"
-	"github.com/elastic/beats/metricbeat/module/system"
 )
 
 func init() {
-	if err := mb.Registry.AddMetricSet("system", "core", New, parse.EmptyHostParser); err != nil {
-		panic(err)
-	}
+	mb.Registry.MustAddMetricSet("system", "core", New,
+		mb.WithHostParser(parse.EmptyHostParser),
+	)
 }
 
 // MetricSet for fetching system core metrics.
 type MetricSet struct {
 	mb.BaseMetricSet
 	config Config
-	cores  *system.CPUCoresMonitor
+	cores  *cpu.CoresMonitor
 }
 
 // New returns a new core MetricSet.
@@ -40,7 +40,7 @@ func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 	return &MetricSet{
 		BaseMetricSet: base,
 		config:        config,
-		cores:         new(system.CPUCoresMonitor),
+		cores:         new(cpu.CoresMonitor),
 	}, nil
 }
 
